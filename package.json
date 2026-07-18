@@ -30,7 +30,8 @@
     "update-metrics": "node scripts/update_metrics.ts",
     "verify-npm-package": "node scripts/verify-npm-package.mjs",
     "eval": "npm run build && node scripts/eval_gemini.ts",
-    "count-tokens": "node scripts/count_tokens.ts"
+    "count-tokens": "node scripts/count_tokens.ts",
+    "fork:pack": "npm pack"
   },
   "files": [
     "build/src",

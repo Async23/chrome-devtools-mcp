@@ -1,0 +1,70 @@
+name: Alfheim check upstream release
+
+on:
+  schedule:
+    - cron: '17 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: alfheim-check-upstream-release
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Check official latest release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Compare releases and open an issue
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          current_tag="$(tr -d '[:space:]' < .alfheim/upstream-release)"
+          latest_tag="$(
+            gh api repos/ChromeDevTools/chrome-devtools-mcp/releases/latest \
+              --jq '.tag_name'
+          )"
+
+          if [[ "${current_tag}" == "${latest_tag}" ]]; then
+            echo "Already based on ${current_tag}."
+            exit 0
+          fi
+
+          issue_title="[upstream] ${latest_tag} is available"
+          existing_issue="$(
+            gh issue list \
+              --repo "${GITHUB_REPOSITORY}" \
+              --state open \
+              --search "\"${issue_title}\" in:title" \
+              --json number \
+              --jq '.[0].number // empty'
+          )"
+
+          if [[ -n "${existing_issue}" ]]; then
+            echo "Issue #${existing_issue} already tracks ${latest_tag}."
+            exit 0
+          fi
+
+          issue_body="$(
+            printf '%s\n\n%s\n\n%s\n%s\n%s\n%s\n' \
+              "The fork currently tracks \`${current_tag}\`, while the latest official release is \`${latest_tag}\`." \
+              "Prepare a new versioned branch from the official tag; do not merge a floating upstream \`main\`." \
+              "1. Create \`alfheim/vX.Y.Z\` from \`${latest_tag}\`." \
+              "2. Cherry-pick the fork-only patch commits." \
+              "3. Update \`.alfheim/upstream-release\` and run the full test suite." \
+              "4. Verify native macOS fullscreen before manually publishing."
+          )"
+
+          gh issue create \
+            --repo "${GITHUB_REPOSITORY}" \
+            --title "${issue_title}" \
+            --body "${issue_body}"
