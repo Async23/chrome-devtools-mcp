@@ -10,6 +10,7 @@ import path from 'node:path';
 import process from 'node:process';
 
 const DEFAULT_REGISTRY = 'https://registry.npmjs.org';
+const PACKAGE_REGISTRY_PATH = '@async23%2fchrome-devtools-mcp';
 
 function getRegistry(): string {
   // Use the user's configured npm registry so update checks work behind
@@ -38,7 +39,9 @@ const cachePath = process.argv[2];
 
 if (cachePath) {
   try {
-    const response = await fetch(`${getRegistry()}/chrome-devtools-mcp/latest`);
+    const response = await fetch(
+      `${getRegistry()}/${PACKAGE_REGISTRY_PATH}/latest`,
+    );
     const data = response.ok ? await response.json() : null;
 
     if (

@@ -381,7 +381,7 @@ export function parseArguments(
   env = process.env,
 ) {
   const yargsInstance = yargs(hideBin(argv))
-    .scriptName('npx chrome-devtools-mcp@latest')
+    .scriptName('npx @async23/chrome-devtools-mcp@latest')
     .options(cliOptions)
     .middleware(args => {
       // We can't set default in the options else

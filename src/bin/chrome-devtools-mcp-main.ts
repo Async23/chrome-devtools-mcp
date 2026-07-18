@@ -20,7 +20,7 @@ import {VERSION} from '../version.js';
 import {cliOptions, parseArguments} from './chrome-devtools-mcp-cli-options.js';
 
 await checkForUpdates(
-  'Run `npm install chrome-devtools-mcp@latest` to update.',
+  'Run `npm install @async23/chrome-devtools-mcp@latest` to update.',
 );
 
 export const args = parseArguments(VERSION);

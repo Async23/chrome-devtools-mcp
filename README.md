@@ -1,12 +1,17 @@
 # Chrome DevTools for agents
 
-[![npm chrome-devtools-mcp package](https://img.shields.io/npm/v/chrome-devtools-mcp.svg)](https://npmjs.org/package/chrome-devtools-mcp)
+[![npm @async23/chrome-devtools-mcp package](https://img.shields.io/npm/v/%40async23%2Fchrome-devtools-mcp.svg)](https://npmjs.org/package/@async23/chrome-devtools-mcp)
 
 Chrome DevTools for agents (`chrome-devtools-mcp`) lets your coding agent (such as Antigravity, Claude, Cursor or Copilot)
 control and inspect a live Chrome browser. It acts as a Model-Context-Protocol
 (MCP) server, giving your AI coding assistant access to the full power of
 Chrome DevTools for reliable automation, in-depth debugging, and performance analysis.
 A [CLI](docs/cli.md) is also provided for use without MCP.
+
+This repository publishes the Async23 fork as
+`@async23/chrome-devtools-mcp`. It includes the local visible-browser focus
+control and oversized full-page screenshot fixes while retaining the
+`chrome-devtools-mcp` executable name.
 
 ## [Tool reference](./docs/tool-reference.md) | [Changelog](./CHANGELOG.md) | [Contributing](./CONTRIBUTING.md) | [Troubleshooting](./docs/troubleshooting.md) | [Design Principles](./docs/design-principles.md)
 
@@ -74,14 +79,21 @@ Add the following config to your MCP client:
   "mcpServers": {
     "chrome-devtools": {
       "command": "npx",
-      "args": ["-y", "chrome-devtools-mcp@latest"]
+      "args": [
+        "-y",
+        "@async23/chrome-devtools-mcp@latest",
+        "--browser-url=http://127.0.0.1:9222",
+        "--no-emulate-focused-pages"
+      ]
     }
   }
 }
 ```
 
 > [!NOTE]
-> Using `chrome-devtools-mcp@latest` ensures that your MCP client will always use the latest version of the Chrome DevTools MCP server.
+> Using `@async23/chrome-devtools-mcp@latest` ensures that your MCP client
+> always uses the latest published version of this fork. The configuration
+> above expects an existing debuggable Chrome instance on port `9222`.
 
 If you are interested in doing only basic browser tasks, use the `--slim` mode:
 

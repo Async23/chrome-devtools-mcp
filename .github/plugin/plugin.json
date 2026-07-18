@@ -6,7 +6,7 @@
     "chrome-devtools": {
       "command": "npx",
       "args": [
-        "chrome-devtools-mcp@1.7.0"
+        "@async23/chrome-devtools-mcp@1.7.0"
       ]
     }
   }

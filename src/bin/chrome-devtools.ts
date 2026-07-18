@@ -34,7 +34,7 @@ import {commands} from './chrome-devtools-cli-options.js';
 import {cliOptions, parseArguments} from './chrome-devtools-mcp-cli-options.js';
 
 await checkForUpdates(
-  'Run `npm install -g chrome-devtools-mcp@latest` and `chrome-devtools start` to update and restart the daemon.',
+  'Run `npm install -g @async23/chrome-devtools-mcp@latest` and `chrome-devtools start` to update and restart the daemon.',
 );
 
 async function start(args: string[], sessionId: string) {
