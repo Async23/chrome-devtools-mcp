@@ -1,11 +1,10 @@
 {
   "name": "chrome-devtools-plugins",
   "version": "1.7.0",
-  "description": "Bundled plugins for actuating and debugging the Chrome browser.",
-  "repository": "https://github.com/ChromeDevTools/chrome-devtools-mcp",
+  "description": "Bundled plugins for the Async23 Chrome DevTools MCP fork.",
+  "repository": "https://github.com/Async23/chrome-devtools-mcp",
   "owner": {
-    "name": "Chrome DevTools Team",
-    "email": "devtools-dev@chromium.org"
+    "name": "Async23"
   },
   "plugins": [
     {

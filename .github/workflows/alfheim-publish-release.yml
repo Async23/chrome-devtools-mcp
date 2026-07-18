@@ -120,10 +120,11 @@ jobs:
           fi
 
           notes="$(
-            printf '%s\n\n%s\n%s\n' \
+            printf '%s\n\n%s\n%s\n%s\n' \
               "Patched from official \`${{ steps.release.outputs.upstream_tag }}\`." \
+              "Fork package: \`@async23/chrome-devtools-mcp@${{ steps.release.outputs.version }}\`." \
               "Focused-page emulation remains enabled by default." \
-              "Pass \`--no-emulate-focused-pages\` for visible Chrome instances."
+              "Pass \`--no-emulate-focused-pages\` for visible Chrome instances; oversized full-page screenshots are resized or compressed before they are returned."
           )"
 
           gh release create "${release_tag}" "${asset}" \

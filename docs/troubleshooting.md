@@ -2,19 +2,19 @@
 
 ## General tips
 
-- Run `npx chrome-devtools-mcp@latest --help` to test if the MCP server runs on your machine.
+- Run `npx @async23/chrome-devtools-mcp@latest --help` to test if the MCP server runs on your machine.
 - Make sure that your MCP client uses the same npm and node version as your terminal.
 - When configuring your MCP client, try using the `--yes` argument to `npx` to
   auto-accept installation prompt.
 - Find a specific error in the output of the `chrome-devtools-mcp` server.
   Usually, if your client is an IDE, logs would be in the Output pane.
-- Search the [GitHub repository issues and discussions](https://github.com/ChromeDevTools/chrome-devtools-mcp) for help or existing similar problems.
+- Search the [fork's GitHub repository issues and discussions](https://github.com/Async23/chrome-devtools-mcp) for help or existing similar problems.
 
 ## Debugging
 
 Start the MCP server with debugging enabled and a log file:
 
-- `DEBUG=* npx chrome-devtools-mcp@latest --log-file=/path/to/chrome-devtools-mcp.log`
+- `DEBUG=* npx @async23/chrome-devtools-mcp@latest --log-file=/path/to/chrome-devtools-mcp.log`
 
 Using `.mcp.json` to debug while using a client:
 
@@ -25,7 +25,7 @@ Using `.mcp.json` to debug while using a client:
       "type": "stdio",
       "command": "npx",
       "args": [
-        "chrome-devtools-mcp@latest",
+        "@async23/chrome-devtools-mcp@latest",
         "--log-file",
         "/path/to/chrome-devtools-mcp.log"
       ],
@@ -43,7 +43,7 @@ Using `.mcp.json` to debug while using a client:
 
 This usually indicates either a non-supported Node version is in use or that the
 `npm`/`npx` cache is corrupted. Try clearing the cache, uninstalling
-`chrome-devtools-mcp` and installing it again. Clear the cache by running:
+`@async23/chrome-devtools-mcp` and installing it again. Clear the cache by running:
 
 ```sh
 rm -rf ~/.npm/_npx # NOTE: this might remove other installed npx executables.
@@ -96,7 +96,7 @@ Possible workarounds include:
   2. Start Chrome on the Windows side with:
      `chrome.exe --remote-debugging-port=9222 --user-data-dir=C:\path\to\dir`
   3. Start `chrome-devtools-mcp` with:
-     `npx chrome-devtools-mcp --browser-url http://127.0.0.1:9222`
+     `npx @async23/chrome-devtools-mcp@latest --browser-url http://127.0.0.1:9222`
 
 - **Use PowerShell or Git Bash** instead of WSL.
 
@@ -108,7 +108,7 @@ Possible workarounds include:
   "mcpServers": {
       "chrome-devtools": {
         "command": "cmd",
-        "args": ["/c", "npx", "-y", "chrome-devtools-mcp@latest"]
+        "args": ["/c", "npx", "-y", "@async23/chrome-devtools-mcp@latest"]
       }
     }
   ```
@@ -121,7 +121,7 @@ Possible workarounds include:
   "mcpServers": {
       "chrome-devtools": {
         "command": "C:\\nvm4w\\nodejs\\npx.ps1",
-        "args": ["-y", "chrome-devtools-mcp@latest"]
+        "args": ["-y", "@async23/chrome-devtools-mcp@latest"]
       }
     }
   ```
@@ -129,14 +129,14 @@ Possible workarounds include:
 ### Claude Code plugin installation fails with `Failed to clone repository`
 
 When installing `chrome-devtools-mcp` as a Claude Code plugin (either from the
-official marketplace or via `/plugin marketplace add`), the installation may fail
+fork marketplace or via `/plugin marketplace add`), the installation may fail
 with a timeout error if your environment cannot reach `github.com` on port 443
 (HTTPS):
 
 ```
 Failed to download/cache plugin chrome-devtools-mcp: Failed to clone repository:
   Cloning into '...'...
-  fatal: unable to access 'https://github.com/ChromeDevTools/chrome-devtools-mcp.git/':
+  fatal: unable to access 'https://github.com/Async23/chrome-devtools-mcp.git/':
   Failed to connect to github.com port 443
 ```
 
@@ -161,7 +161,7 @@ If the plugin marketplace approach fails, you can install `chrome-devtools-mcp`
 as an MCP server directly without cloning the repository:
 
 ```sh
-claude mcp add chrome-devtools --scope user npx chrome-devtools-mcp@latest
+claude mcp add chrome-devtools --scope user npx @async23/chrome-devtools-mcp@latest
 ```
 
 This bypasses the git clone entirely and uses npm/npx to fetch the package. Note
