@@ -1,0 +1,122 @@
+name: Alfheim publish patched release
+
+on:
+  workflow_dispatch:
+    inputs:
+      revision:
+        description: Fork revision for this upstream release
+        required: true
+        default: '1'
+        type: string
+      native-fullscreen-verified:
+        description: Native macOS fullscreen was manually verified
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: alfheim-publish-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Test and publish GitHub release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Require native fullscreen verification
+        if: ${{ !inputs.native-fullscreen-verified }}
+        run: |
+          echo 'Native macOS fullscreen must be verified before publishing.'
+          exit 1
+
+      - name: Check out repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Validate release branch
+        id: release
+        shell: bash
+        run: |
+          set -euo pipefail
+          upstream_tag="$(tr -d '[:space:]' < .alfheim/upstream-release)"
+          version="${upstream_tag#chrome-devtools-mcp-v}"
+          expected_branch="alfheim/v${version}"
+          release_tag="alfheim-chrome-devtools-mcp-v${version}-${{ inputs.revision }}"
+
+          if [[ "${GITHUB_REF_NAME}" != "${expected_branch}" ]]; then
+            echo "Run this workflow from ${expected_branch}, not ${GITHUB_REF_NAME}."
+            exit 1
+          fi
+
+          echo "upstream_tag=${upstream_tag}" >> "${GITHUB_OUTPUT}"
+          echo "version=${version}" >> "${GITHUB_OUTPUT}"
+          echo "release_tag=${release_tag}" >> "${GITHUB_OUTPUT}"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          cache: npm
+          node-version-file: '.nvmrc'
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: true
+
+      - name: Install browser
+        run: npx puppeteer browsers install chrome
+
+      - name: Disable AppArmor
+        run: echo 0 | sudo tee /proc/sys/kernel/apparmor_restrict_unprivileged_userns
+
+      - name: Check formatting
+        run: npm run check-format
+
+      - name: Run complete test suite
+        run: npm run test
+        env:
+          NODE_OPTIONS: '--max_old_space_size=4096'
+
+      - name: Build distributable package
+        run: |
+          npm run bundle
+          mkdir -p dist
+          npm run fork:pack -- --pack-destination dist
+          mv \
+            "dist/chrome-devtools-mcp-${{ steps.release.outputs.version }}.tgz" \
+            "dist/chrome-devtools-mcp-${{ steps.release.outputs.version }}-alfheim.${{ inputs.revision }}.tgz"
+        env:
+          NODE_ENV: production
+          NODE_OPTIONS: '--max_old_space_size=4096'
+
+      - name: Publish GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          release_tag="${{ steps.release.outputs.release_tag }}"
+          asset="dist/chrome-devtools-mcp-${{ steps.release.outputs.version }}-alfheim.${{ inputs.revision }}.tgz"
+
+          if gh release view "${release_tag}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            echo "Release ${release_tag} already exists."
+            exit 1
+          fi
+
+          notes="$(
+            printf '%s\n\n%s\n%s\n' \
+              "Patched from official \`${{ steps.release.outputs.upstream_tag }}\`." \
+              "Focused-page emulation remains enabled by default." \
+              "Pass \`--no-emulate-focused-pages\` for visible Chrome instances."
+          )"
+
+          gh release create "${release_tag}" "${asset}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --target "${GITHUB_SHA}" \
+            --title "chrome-devtools-mcp ${{ steps.release.outputs.version }} (Alfheim ${{ inputs.revision }})" \
+            --notes "${notes}"

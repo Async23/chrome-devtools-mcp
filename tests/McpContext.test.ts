@@ -29,6 +29,29 @@ describe('McpContext', () => {
     sinon.restore();
   });
 
+  it('does not emulate focused pages when disabled', async () => {
+    await withBrowser(async (browser, page) => {
+      const focusSpy = sinon.spy(page, 'emulateFocusedPage');
+      const options = {
+        experimentalDevToolsDebugging: false,
+        performanceCrux: true,
+        emulateFocusedPages: false,
+      };
+      const context = await McpContext.from(
+        browser,
+        logger('test'),
+        options,
+        Locator,
+      );
+
+      try {
+        sinon.assert.notCalled(focusSpy);
+      } finally {
+        context.dispose();
+      }
+    });
+  });
+
   it('list pages', async () => {
     await withMcpContext(async (_response, context) => {
       const page = context.getSelectedMcpPage();
@@ -231,6 +254,7 @@ describe('McpContext', () => {
       const options = {
         experimentalDevToolsDebugging: false,
         performanceCrux: false,
+        emulateFocusedPages: true,
       };
       const first = await McpContext.from(
         browser,
@@ -273,6 +297,7 @@ describe('McpContext', () => {
         {
           experimentalDevToolsDebugging: false,
           performanceCrux: false,
+          emulateFocusedPages: true,
           reconnected: true,
         },
         Locator,

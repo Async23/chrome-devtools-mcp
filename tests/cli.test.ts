@@ -25,6 +25,8 @@ describe('cli args parsing', () => {
     autoConnect: undefined,
     'performance-crux': true,
     performanceCrux: true,
+    'emulate-focused-pages': true,
+    emulateFocusedPages: true,
     'usage-statistics': true,
     usageStatistics: true,
     'redact-network-headers': false,
@@ -346,6 +348,18 @@ describe('cli args parsing', () => {
       {},
     );
     assert.strictEqual(disabledArgs.performanceCrux, false);
+  });
+
+  it('parses focused page emulation flag', async () => {
+    const defaultArgs = parseArguments('1.0.0', ['node', 'main.js']);
+    assert.strictEqual(Reflect.get(defaultArgs, 'emulateFocusedPages'), true);
+
+    const disabledArgs = parseArguments(
+      '1.0.0',
+      ['node', 'main.js', '--no-emulate-focused-pages'],
+      {},
+    );
+    assert.strictEqual(Reflect.get(disabledArgs, 'emulateFocusedPages'), false);
   });
 
   it('parses blocked-url-pattern flags as array', async () => {
