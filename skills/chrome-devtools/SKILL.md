@@ -5,7 +5,7 @@ description: Uses Chrome DevTools via MCP for efficient debugging, troubleshooti
 
 ## Core Concepts
 
-**Browser lifecycle**: Browser starts automatically on first tool call using a persistent Chrome profile. Configure via CLI args in the MCP server configuration: `npx chrome-devtools-mcp@latest --help`.
+**Browser lifecycle**: Browser starts automatically on first tool call using a persistent Chrome profile. Configure via CLI args in the MCP server configuration: `npx @async23/chrome-devtools-mcp@latest --help`.
 Addional tooling can be enabled by providing the following flags:
 
 - For extension tooling, use the `--categoryExtensions` flag.
@@ -48,7 +48,7 @@ You can send multiple tool calls in parallel, but maintain correct order: naviga
 >   "mcpServers": {
 >     "chrome-devtools": {
 >       "command": "npx",
->       "args": ["chrome-devtools-mcp@latest", "--categoryExtensions"]
+>       "args": ["@async23/chrome-devtools-mcp@latest", "--categoryExtensions"]
 >     }
 >   }
 > }
@@ -69,4 +69,4 @@ If `chrome-devtools-mcp` is insufficient, guide users to use Chrome DevTools UI:
 - https://developer.chrome.com/docs/devtools
 - https://developer.chrome.com/docs/devtools/ai-assistance
 
-If there are errors launching `chrome-devtools-mcp` or Chrome, refer to https://github.com/ChromeDevTools/chrome-devtools-mcp/blob/main/docs/troubleshooting.md.
+If there are errors launching `chrome-devtools-mcp` or Chrome, refer to https://github.com/Async23/chrome-devtools-mcp/blob/alfheim/v1.6.0/docs/troubleshooting.md.

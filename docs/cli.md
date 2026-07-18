@@ -1,13 +1,13 @@
 # Chrome DevTools CLI
 
-The `chrome-devtools-mcp` package includes an **experimental** CLI interface that allows you to interact with the browser directly from your terminal. This is particularly useful for debugging or when you want an agent to generate scripts that automate browser actions.
+The `@async23/chrome-devtools-mcp` package includes an **experimental** CLI interface that allows you to interact with the browser directly from your terminal. This is particularly useful for debugging or when you want an agent to generate scripts that automate browser actions.
 
 ## Getting started
 
 Install the package globally to make the `chrome-devtools` command available:
 
 ```sh
-npm i chrome-devtools-mcp@latest -g
+npm i @async23/chrome-devtools-mcp@latest -g
 chrome-devtools status # check if install worked.
 ```
 

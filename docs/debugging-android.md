@@ -16,7 +16,7 @@ The workflow below works for most users. See [Troubleshooting: DevTools is not d
    "chrome-devtools": {
      "command": "npx",
      "args": [
-       "chrome-devtools-mcp@latest",
+       "@async23/chrome-devtools-mcp@latest",
        "--wsEndpoint=ws://127.0.0.1:9222/devtools/browser/"
      ],
      "trust": true
