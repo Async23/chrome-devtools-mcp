@@ -83,25 +83,36 @@ jobs:
           NODE_OPTIONS: '--max_old_space_size=4096'
 
       - name: Build distributable package
+        id: package
+        shell: bash
         run: |
+          set -euo pipefail
           npm run bundle
           mkdir -p dist
           npm run fork:pack -- --pack-destination dist
+          artifact="dist/chrome-devtools-mcp-${{ steps.release.outputs.version }}-alfheim.${{ inputs.revision }}.tgz"
           mv \
             "dist/chrome-devtools-mcp-${{ steps.release.outputs.version }}.tgz" \
-            "dist/chrome-devtools-mcp-${{ steps.release.outputs.version }}-alfheim.${{ inputs.revision }}.tgz"
+            "${artifact}"
+          echo "artifact=${artifact}" >> "${GITHUB_OUTPUT}"
         env:
           NODE_ENV: production
           NODE_OPTIONS: '--max_old_space_size=4096'
+
+      - name: Verify distributable package
+        env:
+          PACKAGE_ARTIFACT: ${{ steps.package.outputs.artifact }}
+        run: npm run verify-npm-package -- "${PACKAGE_ARTIFACT}"
 
       - name: Publish GitHub release
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          PACKAGE_ARTIFACT: ${{ steps.package.outputs.artifact }}
         run: |
           set -euo pipefail
           release_tag="${{ steps.release.outputs.release_tag }}"
-          asset="dist/chrome-devtools-mcp-${{ steps.release.outputs.version }}-alfheim.${{ inputs.revision }}.tgz"
+          asset="${PACKAGE_ARTIFACT}"
 
           if gh release view "${release_tag}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
             echo "Release ${release_tag} already exists."

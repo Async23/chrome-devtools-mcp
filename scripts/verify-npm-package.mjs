@@ -4,25 +4,65 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import {execSync} from 'node:child_process';
+import {execFileSync} from 'node:child_process';
+import {statSync} from 'node:fs';
+import path from 'node:path';
+import process from 'node:process';
 
-// Checks that the select build files are present using `npm publish --dry-run`.
+function runNpm(args) {
+  const npmExecPath = process.env['npm_execpath'];
+  if (!npmExecPath) {
+    throw new Error(
+      'npm_execpath is unavailable; run this verifier through npm run verify-npm-package.',
+    );
+  }
+
+  return execFileSync(process.execPath, [npmExecPath, ...args], {
+    encoding: 'utf8',
+    maxBuffer: 20 * 1024 * 1024,
+  });
+}
+
+// Checks that select build files are present in an existing tarball or the
+// tarball npm would create from the current working directory.
 function verifyPackageContents() {
+  const packageSpec = path.resolve(process.argv[2] ?? process.cwd());
   try {
-    const output = execSync('npm publish --dry-run --json --silent', {
-      encoding: 'utf8',
-    });
-    // skip non-JSON output from prepare.
-    const data = JSON.parse(output.substring(output.indexOf('{')));
-    const files = data['chrome-devtools-mcp'].files.map(f => f.path);
+    const packageStat = statSync(packageSpec);
+    if (!packageStat.isDirectory() && !packageStat.isFile()) {
+      throw new Error('Package path must be a local directory or tarball.');
+    }
+
+    const output = runNpm([
+      'pack',
+      packageSpec,
+      '--dry-run',
+      '--json',
+      '--silent',
+      '--ignore-scripts',
+      '--offline',
+    ]);
+    const parsedOutput = JSON.parse(output);
+    const packResults = Array.isArray(parsedOutput)
+      ? parsedOutput
+      : Object.values(parsedOutput);
+    if (packResults.length !== 1) {
+      throw new Error(
+        `Expected one npm pack result, received ${packResults.length}.`,
+      );
+    }
+    const [packResult] = packResults;
+    if (!packResult || !Array.isArray(packResult.files)) {
+      throw new Error('npm pack output did not include a files array.');
+    }
+    const files = packResult.files.map(file => file.path);
     // Check some important files.
     const requiredPaths = [
       'build/src/index.js',
       'build/src/third_party/index.js',
     ];
     for (const requiredPath of requiredPaths) {
-      const hasBuildFolder = files.some(path => path.startsWith(requiredPath));
-      if (!hasBuildFolder) {
+      if (!files.includes(requiredPath)) {
         console.error(
           `Assertion Failed: "${requiredPath}" not found in tarball.`,
         );
@@ -30,10 +70,10 @@ function verifyPackageContents() {
       }
     }
     console.log(
-      `npm publish --dry-run contained ${JSON.stringify(requiredPaths)}`,
+      `Verified ${packageSpec} contains ${JSON.stringify(requiredPaths)}`,
     );
   } catch (err) {
-    console.error('failed to parse npm publish output', err);
+    console.error(`Failed to inspect npm package "${packageSpec}".`, err);
     process.exit(1);
   }
 }

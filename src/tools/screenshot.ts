@@ -17,6 +17,8 @@ import {definePageTool} from './ToolDefinition.js';
 
 type ScreenshotFormat = 'png' | 'jpeg' | 'webp';
 
+const MAX_SAFE_SCREENSHOT_DIMENSION = 131_071;
+
 async function getSourceBox(
   page: Page,
   element: ElementHandle | undefined,
@@ -146,22 +148,26 @@ export const screenshot = definePageTool(args => {
           : (request.params.quality ?? screenshotQuality);
       const fullPage = request.params.fullPage ?? false;
 
-      // Compute a downscale clip when --screenshot-max-width or
-      // --screenshot-max-height is set and the source exceeds either bound.
-      // The smaller scale factor wins so both bounds are respected while
-      // preserving aspect ratio.
+      // Chrome rejects full-page captures whose CSS width or height is
+      // 131072px or greater. Treat the last safe dimension as an implicit
+      // maximum and combine it with any stricter user-provided bounds.
+      const maxWidth = fullPage
+        ? Math.min(
+            screenshotMaxWidth ?? MAX_SAFE_SCREENSHOT_DIMENSION,
+            MAX_SAFE_SCREENSHOT_DIMENSION,
+          )
+        : screenshotMaxWidth;
+      const maxHeight = fullPage
+        ? Math.min(
+            screenshotMaxHeight ?? MAX_SAFE_SCREENSHOT_DIMENSION,
+            MAX_SAFE_SCREENSHOT_DIMENSION,
+          )
+        : screenshotMaxHeight;
       let clip: ScreenshotClip | undefined;
-      if (
-        screenshotMaxWidth !== undefined ||
-        screenshotMaxHeight !== undefined
-      ) {
+      if (maxWidth !== undefined || maxHeight !== undefined) {
         const box = await getSourceBox(page, element, fullPage);
         if (box) {
-          clip = computeDownscaleClip(
-            box,
-            screenshotMaxWidth,
-            screenshotMaxHeight,
-          );
+          clip = computeDownscaleClip(box, maxWidth, maxHeight);
         }
       }
 

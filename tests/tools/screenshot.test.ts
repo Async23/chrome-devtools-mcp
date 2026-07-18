@@ -167,6 +167,62 @@ describe('screenshot', () => {
       });
     });
 
+    it('downscales a full page at the Chrome screenshot height limit', async () => {
+      await withMcpContext(async (response, context) => {
+        const page = context.getSelectedMcpPage().pptrPage;
+        await page.setViewport({width: 1, height: 1});
+        await page.setContent(
+          html`<style>
+              body {
+                margin: 0;
+              }</style
+            ><div style="width:1px;height:131072px;background:red"></div>`,
+        );
+
+        await screenshotTool.handler(
+          {
+            params: {format: 'png', fullPage: true},
+            page: context.getSelectedMcpPage(),
+          },
+          response,
+          context,
+        );
+
+        assert.equal(response.images.length, 1);
+        const buf = Buffer.from(response.images[0].data, 'base64');
+        assert.equal(pngWidth(buf), 1);
+        assert.equal(pngHeight(buf), 131071);
+      });
+    });
+
+    it('downscales a full page at the Chrome screenshot width limit', async () => {
+      await withMcpContext(async (response, context) => {
+        const page = context.getSelectedMcpPage().pptrPage;
+        await page.setViewport({width: 1, height: 1});
+        await page.setContent(
+          html`<style>
+              body {
+                margin: 0;
+              }</style
+            ><div style="width:131072px;height:1px;background:red"></div>`,
+        );
+
+        await screenshotTool.handler(
+          {
+            params: {format: 'png', fullPage: true},
+            page: context.getSelectedMcpPage(),
+          },
+          response,
+          context,
+        );
+
+        assert.equal(response.images.length, 1);
+        const buf = Buffer.from(response.images[0].data, 'base64');
+        assert.equal(pngWidth(buf), 131071);
+        assert.equal(pngHeight(buf), 1);
+      });
+    });
+
     it('with element uid', async () => {
       await withMcpContext(async (response, context) => {
         const fixture = screenshots.button;
