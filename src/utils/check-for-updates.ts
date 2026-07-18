@@ -33,7 +33,7 @@ export async function checkForUpdates(message: string) {
   const cachePath = path.join(
     os.homedir(),
     '.cache',
-    'chrome-devtools-mcp',
+    'async23-chrome-devtools-mcp',
     'latest.json',
   );
 

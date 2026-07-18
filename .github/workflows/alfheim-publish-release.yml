@@ -90,9 +90,9 @@ jobs:
           npm run bundle
           mkdir -p dist
           npm run fork:pack -- --pack-destination dist
-          artifact="dist/chrome-devtools-mcp-${{ steps.release.outputs.version }}-alfheim.${{ inputs.revision }}.tgz"
+          artifact="dist/async23-chrome-devtools-mcp-${{ steps.release.outputs.version }}-alfheim.${{ inputs.revision }}.tgz"
           mv \
-            "dist/chrome-devtools-mcp-${{ steps.release.outputs.version }}.tgz" \
+            "dist/async23-chrome-devtools-mcp-${{ steps.release.outputs.version }}.tgz" \
             "${artifact}"
           echo "artifact=${artifact}" >> "${GITHUB_OUTPUT}"
         env:
