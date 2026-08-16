@@ -11,7 +11,7 @@ The fork currently carries these user-visible changes:
 
 ## Policy
 
-- Each patched release uses a versioned branch such as `alfheim/v1.6.0`.
+- Each patched release uses a versioned branch such as `alfheim/v1.7.0`.
 - `.alfheim/upstream-release` records the exact official base tag.
 - The upstream default remains unchanged: focused-page emulation is enabled.
 - A release tag and its npm package must be built from the same clean commit.

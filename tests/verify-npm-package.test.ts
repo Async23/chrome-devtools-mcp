@@ -15,7 +15,7 @@ import {afterEach, describe, it} from 'node:test';
 const verifierPath = path.join(
   process.cwd(),
   'scripts',
-  'verify-npm-package.mjs',
+  'verify-npm-package.js',
 );
 const temporaryDirectories: string[] = [];
 

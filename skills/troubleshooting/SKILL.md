@@ -66,7 +66,7 @@ Identify other error messages from the failed tool call or the MCP initializatio
 
 ### Step 3: Read Known Issues
 
-Read the contents of https://github.com/Async23/chrome-devtools-mcp/blob/alfheim/v1.6.0/docs/troubleshooting.md to map the error to a known issue. Pay close attention to:
+Read the contents of https://github.com/Async23/chrome-devtools-mcp/blob/alfheim/v1.7.0/docs/troubleshooting.md to map the error to a known issue. Pay close attention to:
 
 - Sandboxing restrictions (macOS Seatbelt, Linux containers).
 - WSL requirements.
@@ -92,7 +92,7 @@ If the issue is still unclear, run diagnostic commands to test the server direct
 
 ### Step 6: Check GitHub for Existing Issues
 
-If https://github.com/Async23/chrome-devtools-mcp/blob/alfheim/v1.6.0/docs/troubleshooting.md does not cover the specific error, check if the `gh` (GitHub CLI) tool is available in the environment. If so, search the fork repository for similar issues:
+If https://github.com/Async23/chrome-devtools-mcp/blob/alfheim/v1.7.0/docs/troubleshooting.md does not cover the specific error, check if the `gh` (GitHub CLI) tool is available in the environment. If so, search the fork repository for similar issues:
 `gh issue list --repo Async23/chrome-devtools-mcp --search "<error snippet>" --state all`
 
 Alternatively, you can recommend that the user checks https://github.com/Async23/chrome-devtools-mcp/issues and https://github.com/Async23/chrome-devtools-mcp/discussions for help.
