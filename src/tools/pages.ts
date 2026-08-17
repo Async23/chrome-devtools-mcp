@@ -99,36 +99,19 @@ export const closePage = defineTool({
 export const newPage = defineTool(() => {
   return {
     name: 'new_page',
-    description: `Open a new tab and load a URL. Use project URL if not specified otherwise.`,
+    description: `Open a new background tab in the default browser context and load a URL. Use project URL if not specified otherwise.`,
     annotations: {
       category: ToolCategory.NAVIGATION,
       readOnlyHint: false,
     },
     schema: {
       url: zod.string().describe('URL to load in a new page.'),
-      background: zod
-        .boolean()
-        .optional()
-        .describe(
-          'Whether to open the page in the background without bringing it to the front. Default is false (foreground).',
-        ),
-      isolatedContext: zod
-        .string()
-        .optional()
-        .describe(
-          'If specified, the page is created in an isolated browser context with the given name. ' +
-            'Pages in the same browser context share cookies and storage. ' +
-            'Pages in different browser contexts are fully isolated.',
-        ),
       ...timeoutSchema,
     },
     blockedByDialog: false,
     verifyFilesSchema: [],
     handler: async (request, response, context) => {
-      const page = await context.newPage(
-        request.params.background,
-        request.params.isolatedContext,
-      );
+      const page = await context.newPage(true, undefined);
 
       await page.waitForEventsAfterAction(
         async () => {

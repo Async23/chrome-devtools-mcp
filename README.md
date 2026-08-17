@@ -10,8 +10,9 @@ A [CLI](docs/cli.md) is also provided for use without MCP.
 
 This repository publishes the Async23 fork as
 `@async23/chrome-devtools-mcp`. It includes the local visible-browser focus
-control and oversized full-page screenshot fixes while retaining the
-`chrome-devtools-mcp` executable name.
+control, oversized full-page screenshot fixes, and a hardened `new_page` that
+always uses the default browser context and opens in the background while
+retaining the `chrome-devtools-mcp` executable name.
 
 ## [Tool reference](./docs/tool-reference.md) | [Changelog](./CHANGELOG.md) | [Contributing](./CONTRIBUTING.md) | [Troubleshooting](./docs/troubleshooting.md) | [Design Principles](./docs/design-principles.md)
 

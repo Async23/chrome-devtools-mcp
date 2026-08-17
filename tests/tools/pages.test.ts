@@ -12,6 +12,7 @@ import type {Dialog} from 'puppeteer-core';
 import sinon from 'sinon';
 
 import type {ParsedArguments} from '../../src/bin/chrome-devtools-mcp-cli-options.js';
+import type {McpContext} from '../../src/McpContext.js';
 import {
   listPages,
   newPage,
@@ -36,6 +37,14 @@ const EXTENSION_SIDE_PANEL_PATH = path.join(
   import.meta.dirname,
   '../../../tests/tools/fixtures/extension-side-panel',
 );
+
+async function createIsolatedPage(context: McpContext, name: string) {
+  const page = await context.newPage(undefined, name);
+  await page.waitForEventsAfterAction(async () => {
+    await page.pptrPage.goto('data:text/html,<html></html>');
+  });
+  return page;
+}
 
 describe('pages', () => {
   afterEach(() => {
@@ -231,6 +240,10 @@ describe('pages', () => {
     });
   });
   describe('new_page', () => {
+    it('only exposes url and timeout', () => {
+      assert.deepStrictEqual(Object.keys(newPage().schema), ['url', 'timeout']);
+    });
+
     it('create a page', async () => {
       await withMcpContext(async (response, context) => {
         assert.strictEqual(
@@ -246,6 +259,14 @@ describe('pages', () => {
           context.getPageById(2),
           context.getSelectedMcpPage(),
         );
+        assert.strictEqual(
+          context.getPageById(2).pptrPage.browserContext(),
+          context.browser.defaultBrowserContext(),
+        );
+        assert.strictEqual(
+          context.getPageById(2).isolatedContextName,
+          undefined,
+        );
         assert.ok(response.includePages);
       });
     });
@@ -260,7 +281,7 @@ describe('pages', () => {
           true,
         );
         await newPage().handler(
-          {params: {url: 'data:text/html,<html></html>', background: true}},
+          {params: {url: 'data:text/html,<html></html>'}},
           response,
           context,
         );
@@ -277,50 +298,19 @@ describe('pages', () => {
       });
     });
   });
-  describe('new_page with isolatedContext', () => {
+  describe('McpContext isolated pages', () => {
     it('creates a page in an isolated context', async () => {
-      await withMcpContext(async (response, context) => {
-        await newPage().handler(
-          {
-            params: {
-              url: 'data:text/html,<html></html>',
-              isolatedContext: 'session-a',
-            },
-          },
-          response,
-          context,
-        );
-        const mcpPage = context.getSelectedMcpPage();
+      await withMcpContext(async (_response, context) => {
+        const mcpPage = await createIsolatedPage(context, 'session-a');
         assert.strictEqual(mcpPage.isolatedContextName, 'session-a');
-        assert.ok(response.includePages);
       });
     });
 
     it('reuses the same context for the same isolatedContext name', async () => {
-      await withMcpContext(async (response, context) => {
-        await newPage().handler(
-          {
-            params: {
-              url: 'data:text/html,<html></html>',
-              isolatedContext: 'session-a',
-            },
-          },
-          response,
-          context,
-        );
-        const mcpPage1 = context.getSelectedMcpPage();
+      await withMcpContext(async (_response, context) => {
+        const mcpPage1 = await createIsolatedPage(context, 'session-a');
         const page1 = mcpPage1.pptrPage;
-        await newPage().handler(
-          {
-            params: {
-              url: 'data:text/html,<html></html>',
-              isolatedContext: 'session-a',
-            },
-          },
-          response,
-          context,
-        );
-        const mcpPage2 = context.getSelectedMcpPage();
+        const mcpPage2 = await createIsolatedPage(context, 'session-a');
         const page2 = mcpPage2.pptrPage;
         assert.notStrictEqual(page1, page2);
         assert.strictEqual(mcpPage1.isolatedContextName, 'session-a');
@@ -330,30 +320,10 @@ describe('pages', () => {
     });
 
     it('creates separate contexts for different isolatedContext names', async () => {
-      await withMcpContext(async (response, context) => {
-        await newPage().handler(
-          {
-            params: {
-              url: 'data:text/html,<html></html>',
-              isolatedContext: 'session-a',
-            },
-          },
-          response,
-          context,
-        );
-        const mcpPageA = context.getSelectedMcpPage();
+      await withMcpContext(async (_response, context) => {
+        const mcpPageA = await createIsolatedPage(context, 'session-a');
         const pageA = mcpPageA.pptrPage;
-        await newPage().handler(
-          {
-            params: {
-              url: 'data:text/html,<html></html>',
-              isolatedContext: 'session-b',
-            },
-          },
-          response,
-          context,
-        );
-        const mcpPageB = context.getSelectedMcpPage();
+        const mcpPageB = await createIsolatedPage(context, 'session-b');
         const pageB = mcpPageB.pptrPage;
         assert.strictEqual(mcpPageA.isolatedContextName, 'session-a');
         assert.strictEqual(mcpPageB.isolatedContextName, 'session-b');
@@ -363,16 +333,8 @@ describe('pages', () => {
 
     it('includes isolatedContext in page listing', async () => {
       await withMcpContext(async (response, context) => {
-        await newPage().handler(
-          {
-            params: {
-              url: 'data:text/html,<html></html>',
-              isolatedContext: 'session-a',
-            },
-          },
-          response,
-          context,
-        );
+        await createIsolatedPage(context, 'session-a');
+        await listPages().handler({params: {}}, response, context);
         const result = await response.handle(context);
         const pages = (
           result.structuredContent as {pages: Array<{isolatedContext?: string}>}
@@ -400,16 +362,7 @@ describe('pages', () => {
 
     it('closes an isolated page without errors', async () => {
       await withMcpContext(async (response, context) => {
-        await newPage().handler(
-          {
-            params: {
-              url: 'data:text/html,<html></html>',
-              isolatedContext: 'session-a',
-            },
-          },
-          response,
-          context,
-        );
+        await createIsolatedPage(context, 'session-a');
         const page = context.getSelectedMcpPage().pptrPage;
         const pageId = context.getSelectedMcpPage().id;
         assert.ok(!page.isClosed());
@@ -428,9 +381,18 @@ describe('pages', () => {
           });
         });
 
-        const evalPromise = page.evaluate(() => {
-          alert('test dialog');
-        });
+        const evalPromise = page
+          .evaluate(() => {
+            alert('test dialog');
+          })
+          .catch(error => {
+            if (
+              !(error instanceof Error) ||
+              !error.message.includes('Target closed')
+            ) {
+              throw error;
+            }
+          });
         const dialog = await dialogPromise;
 
         await newPage().handler(
@@ -449,17 +411,8 @@ describe('pages', () => {
 
   it('navigate_page targets the pageId page, not the global selection', async () => {
     await withMcpContext(async (response, context) => {
-      await newPage().handler(
-        {
-          params: {
-            url: 'data:text/html,<h1>Initial</h1>',
-            isolatedContext: 'nav-ctx',
-          },
-        },
-        response,
-        context,
-      );
-      const isolatedPage = context.getSelectedMcpPage();
+      const isolatedPage = await context.newPage(undefined, 'nav-ctx');
+      await isolatedPage.pptrPage.goto('data:text/html,<h1>Initial</h1>');
 
       // Switch global selection back to the default page.
       await selectPage.handler({params: {pageId: 1}}, response, context);
@@ -593,30 +546,12 @@ describe('pages', () => {
     it('preserves focus across different browser contexts', async () => {
       await withMcpContext(async (response, context) => {
         // Create pages in separate isolated contexts.
-        await newPage().handler(
-          {
-            params: {
-              url: 'data:text/html,<html></html>',
-              isolatedContext: 'ctx-a',
-            },
-          },
-          response,
-          context,
-        );
-        const pageA = context.getSelectedMcpPage().pptrPage;
-        const pageAId = context.getSelectedMcpPage().id;
+        const mcpPageA = await createIsolatedPage(context, 'ctx-a');
+        const pageA = mcpPageA.pptrPage;
+        const pageAId = mcpPageA.id;
 
-        await newPage().handler(
-          {
-            params: {
-              url: 'data:text/html,<html></html>',
-              isolatedContext: 'ctx-b',
-            },
-          },
-          response,
-          context,
-        );
-        const pageB = context.getSelectedMcpPage().pptrPage;
+        const mcpPageB = await createIsolatedPage(context, 'ctx-b');
+        const pageB = mcpPageB.pptrPage;
 
         // Selecting pageB (ctx-b) should not defocus pageA (ctx-a).
         assert.strictEqual(

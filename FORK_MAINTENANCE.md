@@ -8,6 +8,8 @@ The fork currently carries these user-visible changes:
 - Visible-browser users may pass `--no-emulate-focused-pages`.
 - Oversized full-page screenshots are resized or compressed before they are
   returned to the MCP client.
+- `new_page` always creates a background page in the default browser context;
+  callers only provide `url` and optional `timeout`.
 
 ## Policy
 

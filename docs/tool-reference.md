@@ -220,13 +220,11 @@
 
 ### `new_page`
 
-**Description:** Open a new tab and load a URL. Use project URL if not specified otherwise.
+**Description:** Open a new background tab in the default browser context and load a URL. Use project URL if not specified otherwise.
 
 **Parameters:**
 
 - **url** (string) **(required)**: URL to load in a new page.
-- **background** (boolean) _(optional)_: Whether to open the page in the background without bringing it to the front. Default is false (foreground).
-- **isolatedContext** (string) _(optional)_: If specified, the page is created in an isolated browser context with the given name. Pages in the same browser context share cookies and storage. Pages in different browser contexts are fully isolated.
 - **timeout** (integer) _(optional)_: Maximum wait time in milliseconds. If set to 0, the default timeout will be used.
 
 ---
